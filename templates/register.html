@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="jumbotron" style="background:#2ca6b6;color:#fff">
+        <div class="container">
+            <h2 class="display-3">Registration Form</h2>
+                <form class="form-inline my-2 my-lg-0" method="POST" action="/login">
+                    <input class="form-control mr-sm-2" type="text" name="usernameinput" placeholder="Username"
+                        aria-label="Search">
+                    <input class="form-control mr-sm-2" type="text" name="passinput" placeholder="Password"
+                        aria-label="Search">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
