@@ -7,6 +7,8 @@ from werkzeug import check_password_hash, generate_password_hash, \
      secure_filename
 import sqlite3
 
+from forms import LoginForm
+
 DATABASE = '/path/to/database.db'
 
 def get_db():
@@ -21,6 +23,7 @@ ALLOWED_EXTENSIONS = {'txt', 'csv', 'names'}
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024 # 16 Megabytes
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['SECRET_KEY'] = 'you-will-never-guess'
 
 def allowed_file(filename):
     # checks if extension in filename is allowed
@@ -34,10 +37,10 @@ def register_page():
         print(1231)
     return render_template('register.html')
 
-
-
 @app.route('/', methods=['GET', 'POST'])
 def home_page():
+    login_form = LoginForm()
+
     ## TODO: query leaderboard from database
     leaderboard = pd.read_csv('dummy_table.csv')
     leaderboard.sort_values('score', ascending = True, inplace = True) 
@@ -61,10 +64,9 @@ def home_page():
             ## TODO: doing calculation on saved file
             
     return render_template('index.html', 
-                        leaderboard = leaderboard
+                        leaderboard = leaderboard,
+                        login_form=login_form
     )
-
-
 
 if __name__ == '__main__':
 	app.run(debug=True)
