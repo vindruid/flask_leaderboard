@@ -9,7 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import current_user, LoginManager, login_user, logout_user, UserMixin
 
-from forms import LoginForm
+from forms import LoginForm, RegisterForm
 from config import Config
 
 # PARAMETER
@@ -54,12 +54,26 @@ def allowed_file(filename):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
+    print("ASAFA")
     login_form = LoginForm()
+    reg_form = RegisterForm()
     ### TODO handle registration
     if request.method == 'POST': 
+        print("HALO")
         # load and insert user data
-        print(123123)
-    return render_template('register.html', login_form = login_form)
+        print(reg_form.validate_on_submit())
+        # if reg_form.validate_on_submit():
+        user = User.query.filter_by(username=reg_form.username.data).first()
+        print(user)
+        if user is None: # only when user is not registered then proceed
+            print("HALOOO")
+            u = User(username=reg_form.username.data, password_hash = reg_form.password.data)
+            db.session.add(u)
+            db.session.commit()
+
+            return redirect(url_for('home_page'))
+        
+    return render_template('register.html', login_form = login_form, reg_form = reg_form)
 
 @app.route('/logout')
 def logout():
@@ -100,6 +114,7 @@ def home_page():
             #throw error if extension is not allowed
             if not allowed_file(submission_file.filename):
                 raise Exception('Invalid file extension')
+            
 
             if submission_file and allowed_file(submission_file.filename):
                 filename = secure_filename(submission_file.filename)
@@ -112,6 +127,7 @@ def home_page():
                 print(f'SAVED SUBMISSION: {fullPath}')
 
                 ## TODO: doing calculation on saved file
+                return redirect(url_for('home_page'))
             
     return render_template('index.html', 
                         leaderboard = leaderboard,

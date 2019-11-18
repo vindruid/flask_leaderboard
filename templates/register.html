@@ -3,13 +3,27 @@
 <div class="jumbotron" style="background:#2ca6b6;color:#fff">
         <div class="container">
             <h2 class="display-3">Registration Form</h2>
-                <form class="form-inline my-2 my-lg-0" method="POST" action="/login">
+                <!-- <form class="form-inline my-2 my-lg-0" method="POST" action="/login">
                     <input class="form-control mr-sm-2" type="text" name="usernameinput" placeholder="Username"
                         aria-label="Search">
                     <input class="form-control mr-sm-2" type="text" name="passinput" placeholder="Password"
                         aria-label="Search">
                     <button class="btn btn-outline my-2 my-sm-0" type="submit">Register</button>
+                </form> -->
+                <form class="form-inline my-2 my-lg-0" method="POST" action="/register">
+                {{ reg_form.username(size=32) }}
+                {% for error in reg_form.username.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+
+                {{ reg_form.password(size=32) }}
+                {% for error in reg_form.password.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+                
+                {{ reg_form.submit() }}
                 </form>
+
             </div>
         </div>
     </div>
