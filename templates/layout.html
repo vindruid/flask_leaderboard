@@ -47,9 +47,15 @@
 
                         <!-- {{ login_form.username.label }} {{ login_form.username(size=32) }} -->
                         {{ login_form.username(size=32) }}
+                        {% for error in login_form.username.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                        {% endfor %}
 
                         <!-- {{ login_form.password.label }} {{ login_form.password(size=32) }} -->
                         {{ login_form.password(size=32) }}
+                        {% for error in login_form.password.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                        {% endfor %}
 
                         {{ login_form.submit() }}
                     </div>
