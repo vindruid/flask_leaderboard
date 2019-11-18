@@ -1,7 +1,11 @@
-import pandas as pd
+from app import User, db
 
-leaderboard = pd.read_csv('dummy_tables.csv')
+## ADD 
+u = User(username='billy', email='billy@example.com', password_hash = 'hallo')
+db.session.add(u)
+db.session.commit()
+print(u)
 
-for ix, (_, row) in enumerate(leaderboard.iterrows()):
-    print(row.team_name)
-    print(ix)
+users = User.query.all()
+print(users)
+

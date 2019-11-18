@@ -5,25 +5,47 @@ import os
 from flask import Flask,render_template,url_for,request,g, flash, redirect
 from werkzeug import check_password_hash, generate_password_hash, \
      secure_filename
-import sqlite3
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_login import current_user, LoginManager, login_user, logout_user, UserMixin
 
 from forms import LoginForm
+from config import Config
 
-DATABASE = '/path/to/database.db'
+# PARAMETER
 
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-    return db
-
+## Upload parameter
 UPLOAD_FOLDER = 'submissions'
 ALLOWED_EXTENSIONS = {'txt', 'csv', 'names'}
 
+## FLASK configuration
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024 # 16 Megabytes
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY'] = 'my'
+app.config.from_object(Config)
+
+## Database configuration
+db = SQLAlchemy(app)
+db.app = app
+migrate = Migrate(app, db)
+login = LoginManager(app)
+
+@login.user_loader
+def load_user(id):
+    return User.query.get(int(id))
+
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), index=True, unique=True)
+    email = db.Column(db.String(120), index=True, unique=True)
+    password_hash = db.Column(db.String(128)) ## Too lazy to make it hash
+
+    def __repr__(self):
+        return '<User {}>'.format(self.username)
+
+    def check_password(self, password): ## Too lazy to make it hash
+        return self.password_hash == password
 
 def allowed_file(filename):
     # checks if extension in filename is allowed
@@ -32,19 +54,18 @@ def allowed_file(filename):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
+    login_form = LoginForm()
+    ### TODO handle registration
     if request.method == 'POST': 
         # load and insert user data
-        print(1231)
-    return render_template('register.html')
+        print(123123)
+    return render_template('register.html', login_form = login_form)
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    login_form = LoginForm()
-    if login_form.validate_on_submit():
-        print('Login requested for user {}, remember_me={}'.format(
-            login_form.username.data, login_form.remember_me.data))
-        return redirect('/')
-    return render_template('login.html', title='Sign In', login_form=login_form)
+@app.route('/logout')
+def logout():
+    logout_user()
+    print("log out success")
+    return redirect(url_for('home_page'))
 
 @app.route('/', methods=['GET', 'POST'])
 def home_page():
@@ -56,11 +77,22 @@ def home_page():
     leaderboard.reset_index(drop = True, inplace = True)
 
     if request.method == 'POST': # If upload file / Login
-
         ### LOGIN 
         if login_form.validate_on_submit():
             print(f'Login requested for user {login_form.username.data}, remember_me={login_form.remember_me.data}')
-            return redirect('/')
+            user = User.query.filter_by(username=login_form.username.data).first()
+            if user is None: # USER is not registered
+                print("NO user name")
+                return redirect(url_for('home_page'))
+            elif user.check_password(login_form.password.data): # Password True
+                print('True pass')
+                login_user(user, remember=login_form.remember_me.data)
+                return redirect(url_for('home_page'))
+            else: #WRONG PASSWORD
+                print('WRONG PASS')
+                return redirect(url_for('home_page'))
+            login_user(user, remember=login_form.remember_me.data)
+            return redirect(url_for('home_page'))
 
         ### UPLOAD FILE
         if 'uploadfile' in request.files.keys(): 
@@ -87,4 +119,4 @@ def home_page():
     )
 
 if __name__ == '__main__':
-	app.run(debug=True)
+    app.run(debug=True)

@@ -30,7 +30,7 @@
         <tbody>
             {% for ix, row in leaderboard.iterrows() %}
             <tr>
-                <th scope="row">{{ ix }}</th>
+                <th scope="row">{{ ix | int + 1 }}</th>
                 <td>{{ row.team_name}}</td>
                 <td>{{ row.score }}</td>
                 <td>{{ row.entries}}</td>
