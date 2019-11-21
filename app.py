@@ -115,7 +115,6 @@ def home_page():
             if not allowed_file(submission_file.filename):
                 raise Exception('Invalid file extension')
             
-
             if submission_file and allowed_file(submission_file.filename):
                 filename = secure_filename(submission_file.filename)
                 ## TODO: append userid and date to file to avoid duplicates
@@ -127,6 +126,8 @@ def home_page():
                 print(f'SAVED SUBMISSION: {fullPath}')
 
                 ## TODO: doing calculation on saved file
+
+                
                 return redirect(url_for('home_page'))
             
     return render_template('index.html', 

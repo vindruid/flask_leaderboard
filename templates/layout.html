@@ -58,8 +58,8 @@
                             {% endfor %}
                             
                             {{ login_form.submit() }}
-                        {% else %}
-                        <p>WELCOME BACK</p>
+                        {% elif current_user.is_authenticated %}
+                        <p>WELCOME BACK `{{ current_user.username }}` ! </p>
                         {% endif %}
                     </div>
                     <div class="mr-sm-2">
