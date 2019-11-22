@@ -41,8 +41,13 @@ class Scorer():
         score = self.metric(y_key, y_submission)
         return ("SUCCESS", score)
         
-scorer = Scorer()
+def main():
 
-submission_path = './submissions/submission1.csv'
-score = scorer.calculate_score(submission_path)
-print(score)
+    scorer = Scorer()
+
+    submission_path = './submissions/submission1.csv'
+    score = scorer.calculate_score(submission_path)
+    print(score)
+
+if __name__ == "__main__":
+    main()

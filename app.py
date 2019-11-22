@@ -1,6 +1,7 @@
 import numpy as np 
 import pandas as pd # be replaced soon
 import os
+import datetime as dt
 
 from flask import Flask,render_template,url_for,request,g, flash, redirect
 from werkzeug import check_password_hash, generate_password_hash, \
@@ -11,6 +12,9 @@ from flask_login import current_user, LoginManager, login_user, logout_user, Use
 
 from forms import LoginForm, RegisterForm
 from config import Config
+
+from scorer import Scorer
+from sklearn.metrics import mean_squared_error
 
 # PARAMETER
 
@@ -31,6 +35,11 @@ db.app = app
 migrate = Migrate(app, db)
 login = LoginManager(app)
 
+## Scorer
+scorer = Scorer(public_path = './master_key/public_key.csv', 
+                private_path = './master_key/private_key.csv', 
+                metric = mean_squared_error)
+# User Management
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
@@ -47,10 +56,14 @@ class User(UserMixin, db.Model):
     def check_password(self, password): ## Too lazy to make it hash
         return self.password_hash == password
 
-def allowed_file(filename):
-    # checks if extension in filename is allowed
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+class Submission(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.String(140))
+    timestamp = db.Column(db.DateTime, index=True, default=dt.datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __repr__(self):
+        return '<Post {}>'.format(self.body)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
@@ -80,6 +93,11 @@ def logout():
     logout_user()
     print("log out success")
     return redirect(url_for('home_page'))
+
+def allowed_file(filename):
+    # checks if extension in filename is allowed
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 @app.route('/', methods=['GET', 'POST'])
 def home_page():
