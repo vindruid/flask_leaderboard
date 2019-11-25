@@ -105,6 +105,8 @@ def allowed_file(filename):
 @app.route('/', methods=['GET', 'POST'])
 def home_page():
     login_form = LoginForm()
+    
+    submission_status = request.args.get("submission_status", "")
 
     ## TODO: query leaderboard from database
     leaderboard = pd.read_csv('dummy_table.csv')
@@ -130,7 +132,7 @@ def home_page():
             return redirect(url_for('home_page'))
 
         ### UPLOAD FILE
-        if 'uploadfile' in request.files.keys(): 
+        if 'uploadfile' in request.files.keys() and current_user.is_authenticated:
             submission_file = request.files['uploadfile']
             #throw error if extension is not allowed
             if not allowed_file(submission_file.filename):
@@ -150,12 +152,14 @@ def home_page():
                 score = scorer.calculate_score(submission_path = fullPath, submission_type = 'public')
 
                 print(score)
+                submission_status = score[0]
                 
-                return redirect(url_for('home_page'))
+                return redirect(url_for('home_page', submission_status = submission_status))
             
     return render_template('index.html', 
                         leaderboard = leaderboard,
-                        login_form=login_form
+                        login_form=login_form, 
+                        submission_status=submission_status
     )
 
 if __name__ == '__main__':

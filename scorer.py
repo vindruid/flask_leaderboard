@@ -39,7 +39,7 @@ class Scorer():
             return ("SUBMISSION HAS NULL VALUE", None)
 
         score = self.metric(y_key, y_submission)
-        return ("SUCCESS", score)
+        return ("SUBMISSION SUCCESS", score)
         
 def main():
 

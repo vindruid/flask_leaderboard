@@ -7,12 +7,19 @@
             <div class="col">
                 <p><a class="btn btn-success waves-effect btn-lg" href="/" role="button">Refresh &raquo;</a></p>
             </div>
+            {% if current_user.is_anonymous %}
+            <div class="col">
+                <h3>Please Login Before Submit</h3>
+            </div>
+            {% elif current_user.is_authenticated %}
             <div class="col uploadform">
                 <h3>Upload</h3>
                 <form action="" method=post enctype=multipart/form-data> <p><input type=file name=uploadfile>
                     <input type=submit value=Upload>
                 </form>
+                <p>{{ submission_status }}</p>
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
