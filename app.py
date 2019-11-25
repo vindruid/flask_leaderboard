@@ -39,6 +39,7 @@ login = LoginManager(app)
 scorer = Scorer(public_path = './master_key/public_key.csv', 
                 private_path = './master_key/private_key.csv', 
                 metric = mean_squared_error)
+
 # User Management
 @login.user_loader
 def load_user(id):
@@ -51,19 +52,21 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128)) ## Too lazy to make it hash
 
     def __repr__(self):
-        return '<User {}>'.format(self.username)
+        return f'<User {self.username}>'
 
     def check_password(self, password): ## Too lazy to make it hash
         return self.password_hash == password
 
 class Submission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    body = db.Column(db.String(140))
     timestamp = db.Column(db.DateTime, index=True, default=dt.datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    score = db.Column(db.Float)
 
-    def __repr__(self):
-        return '<Post {}>'.format(self.body)
+    def __repr(self):
+        return f'<User ID {self.user_id} score {self.score}>'
+
+db.create_all()
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
@@ -144,7 +147,9 @@ def home_page():
                 print(f'SAVED SUBMISSION: {fullPath}')
 
                 ## TODO: doing calculation on saved file
+                score = scorer.calculate_score(submission_path = fullPath, submission_type = 'public')
 
+                print(score)
                 
                 return redirect(url_for('home_page'))
             
