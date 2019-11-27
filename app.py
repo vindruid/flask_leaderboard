@@ -46,6 +46,7 @@ def load_user(id):
     return User.query.get(int(id))
 
 class User(UserMixin, db.Model):
+    __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
@@ -58,6 +59,7 @@ class User(UserMixin, db.Model):
         return self.password_hash == password
 
 class Submission(db.Model):
+    __tablename__ = "submission"
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, index=True, default=dt.datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -70,7 +72,8 @@ db.create_all()
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
-    print("ASAFA")
+
+    registration_status = request.args.get("registration_status", "")
     login_form = LoginForm()
     reg_form = RegisterForm()
     ### TODO handle registration
@@ -86,10 +89,17 @@ def register_page():
             u = User(username=reg_form.username.data, password_hash = reg_form.password.data)
             db.session.add(u)
             db.session.commit()
+            # flash('Congratulations, you are now a registered user!')
+            registration_status = f"Welcome {reg_form.username.data}, Please Login "
+            return redirect(url_for('register_page', registration_status = registration_status))
 
-            return redirect(url_for('home_page'))
+        else:
+            registration_status = "USER NAME ALREADY USED"
+            return redirect(url_for('register_page', registration_status = registration_status))
+
         
-    return render_template('register.html', login_form = login_form, reg_form = reg_form)
+    if request.method == 'GET':
+        return render_template('register.html', login_form = login_form, reg_form = reg_form, registration_status = registration_status)
 
 @app.route('/logout')
 def logout():

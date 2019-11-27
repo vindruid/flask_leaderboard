@@ -65,7 +65,7 @@
                     <div class="mr-sm-2">
                         {% if current_user.is_anonymous %}
                         {{ login_form.remember_me() }} Remeber Me
-                        <a class="mx-2" href="{{ url_for('register_page') }}">Registration</a>
+                        <a class="mx-2" href="{{ url_for('register_page') }}">Register</a>
                         {% else %}
                         <a class="btn btn-outline-success my-2 my-sm-0" href="{{ url_for('logout') }}" >Logout</a>
                         {% endif %}
