@@ -90,7 +90,7 @@ def get_leaderboard(score_min = True, limit = 100):
             LEFT JOIN user 
             ON user.id = submission.user_id
             GROUP BY 1 
-            ORDER BY 2 {score_sorting}
+            ORDER BY 2 {score_sorting}, 4
             LIMIT {limit}
             """
     df = pd.read_sql(query, 
@@ -119,7 +119,6 @@ def register_page():
             else:
                 registration_status = "USER NAME ALREADY USED"
                 return redirect(url_for('register_page', registration_status = registration_status))
-        ### LOGIN 
         else:
             registration_status = "ERROR VALIDATION"
             print("ANEH")
@@ -182,16 +181,22 @@ def home_page():
                 # filename = str(session['user_id']) + '_' + \
                 #             str(int(time.time())) + '_' + filename
 
-                fullPath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                if not os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id))):
+                    os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id)))
+                
+                fullPath = os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id) , filename)
                 submission_file.save(fullPath)
-                print(f'SAVED SUBMISSION: {fullPath}')
 
                 ## TODO: doing calculation on saved file
-                score = scorer.calculate_score(submission_path = fullPath, submission_type = 'public')
-
-                print(score)
-                submission_status = score[0]
-                
+                result = scorer.calculate_score(submission_path = fullPath, submission_type = 'public')
+                submission_status = result[0]
+                if submission_status == "SUBMISSION SUCCESS":
+                    score = result[1]
+                    score = round(score, 3)
+                    s = Submission(user_id=current_user.id , score=score)
+                    db.session.add(s)
+                    db.session.commit()
+                    print(f"submitted {score}")
                 return redirect(url_for('home_page', submission_status = submission_status))
             
     return render_template('index.html', 
