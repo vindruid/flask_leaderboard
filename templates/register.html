@@ -1,41 +1,81 @@
-{% extends "layout.html" %}
-{% block body %}
-<div class="jumbotron" style="background:#2ca6b6;color:#fff">
-    <div class="container">
-        <h2 class="display-3">Registration Form</h2>
-        <!-- <form class="form-inline my-2 my-lg-0" method="POST" action="/login">
-                    <input class="form-control mr-sm-2" type="text" name="usernameinput" placeholder="Username"
-                        aria-label="Search">
-                    <input class="form-control mr-sm-2" type="text" name="passinput" placeholder="Password"
-                        aria-label="Search">
-                    <button class="btn btn-outline my-2 my-sm-0" type="submit">Register</button>
-                </form> -->
+<!DOCTYPE html>
+<html>
 
-        <form class="form-inline my-2 my-lg-0" method="POST" action="/register">
-            <div class="col">
-                <div class="mr-sm-2 ">
-                    {{ reg_form.username(size=32) }}
-                    {% for error in reg_form.username.errors %}
-                    <span style="color: red;">[{{ error }}]</span>
-                    {% endfor %}
+<head>
+    {% if title %}
+    <title>{{ title }} - Competition Leaderboard</title>
+    {% else %}
+    <title>Competition Leaderoard</title>
+    {% endif %}
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css">
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material Design Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.7.3/css/mdb.min.css" rel="stylesheet">
+</head>
 
-                    {{ reg_form.password(size=32) }}
-                    {% for error in reg_form.password.errors %}
-                    <span style="color: red;">[{{ error }}]</span>
-                    {% endfor %}
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <a class="navbar-brand" href="/">Leader Board</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+            aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-                    {{ reg_form.submit() }}
+        <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('register_page') }}">Register</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <br />
+    <br />
+    <div class="jumbotron" style="background:#2ca6b6;color:#fff">
+        <div class="container">
+            <h2 class="display-3">Registration Form</h2>
+
+            <form class="form-inline my-2 my-lg-0" method="POST" action="/register" style="color:#fff" novalidate>
+                {{ reg_form.hidden_tag() }}
+                <div class="col">
+                    <div class="mr-sm-2 ">
+                        {{ reg_form.username(size=32) }}
+                        {% for error in reg_form.username.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                        {% endfor %}
+
+                        {{ reg_form.password(size=32) }}
+                        {% for error in reg_form.password.errors %}
+                        <span style="color: red;">[{{ error }}]</span>
+                        {% endfor %}
+
+                        {{ reg_form.submit() }}
+                    </div>
                 </div>
-            </div>
-            <h3>{{ registration_status }}</h3>
-        </form>
-
-
-
-
+                <h3>{{ registration_status }}</h3>
+            </form>
+        </div>
     </div>
-</div>
-</div>
+    </div>
 
 
-{% endblock %}
+    <!-- JQuery -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!-- Bootstrap tooltips -->
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.4/umd/popper.min.js"></script>
+    <!-- Bootstrap core JavaScript -->
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.2.1/js/bootstrap.min.js"></script>
+    <!-- MDB core JavaScript -->
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.7.3/js/mdb.min.js"></script>
+
+</body>
+
+</html>

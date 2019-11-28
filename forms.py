@@ -12,3 +12,8 @@ class RegisterForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()], render_kw={"placeholder": "username"})
     password = PasswordField('Password', validators=[DataRequired()], render_kw={"placeholder": "password"})
     submit = SubmitField('Register') 
+
+    # def validate_username(self, username):
+    #     user = User.query.filter_by(username=username.data).first()
+    #     if user is not None:
+    #         raise ValidationError('Please use a different username.')

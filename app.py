@@ -61,45 +61,72 @@ class User(UserMixin, db.Model):
 class Submission(db.Model):
     __tablename__ = "submission"
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, index=True, default=dt.datetime.utcnow)
+    timestamp = db.Column(db.DateTime, index=True, default=dt.datetime.now)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     score = db.Column(db.Float)
 
-    def __repr(self):
+    def __repr__(self):
         return f'<User ID {self.user_id} score {self.score}>'
 
 db.create_all()
 
+def get_leaderboard(score_min = True, limit = 100):
+
+    if score_min:
+        score_agg = "MIN"
+        score_sorting = "ASC"
+
+    else:
+        score_agg = "MAX"
+        score_sorting = "DESC"
+
+    query = f"""
+            SELECT
+            user.username, 
+            {score_agg}(submission.score) as score,
+            count(submission.id) as total_submission,
+            max(timestamp) as last_sub
+            FROM submission 
+            LEFT JOIN user 
+            ON user.id = submission.user_id
+            GROUP BY 1 
+            ORDER BY 2 {score_sorting}
+            LIMIT {limit}
+            """
+    df = pd.read_sql(query, 
+                    db.session.bind)
+    return df
+
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
-
+    u = User(username='halo', password_hash = 'hele')
     registration_status = request.args.get("registration_status", "")
-    login_form = LoginForm()
     reg_form = RegisterForm()
-    ### TODO handle registration
+
     if request.method == 'POST': 
-        print("HALO")
-        # load and insert user data
-        print(reg_form.validate_on_submit())
-        # if reg_form.validate_on_submit():
-        user = User.query.filter_by(username=reg_form.username.data).first()
-        print(user)
-        if user is None: # only when user is not registered then proceed
-            print("HALOOO")
-            u = User(username=reg_form.username.data, password_hash = reg_form.password.data)
-            db.session.add(u)
-            db.session.commit()
-            # flash('Congratulations, you are now a registered user!')
-            registration_status = f"Welcome {reg_form.username.data}, Please Login "
-            return redirect(url_for('register_page', registration_status = registration_status))
-
+        ### REGISTRATION
+        if reg_form.validate_on_submit():
+            user = User.query.filter_by(username=reg_form.username.data).first()
+            print(user)
+            if user is None: # only when user is not registered then proceed
+                print("HALOOO")
+                u = User(username=reg_form.username.data, password_hash = reg_form.password.data)
+                db.session.add(u)
+                db.session.commit()
+                # flash('Congratulations, you are now a registered user!')
+                registration_status = f"Welcome {reg_form.username.data}, Please Login "
+                return redirect(url_for('register_page', registration_status = registration_status))
+            else:
+                registration_status = "USER NAME ALREADY USED"
+                return redirect(url_for('register_page', registration_status = registration_status))
+        ### LOGIN 
         else:
-            registration_status = "USER NAME ALREADY USED"
+            registration_status = "ERROR VALIDATION"
+            print("ANEH")
             return redirect(url_for('register_page', registration_status = registration_status))
-
         
     if request.method == 'GET':
-        return render_template('register.html', login_form = login_form, reg_form = reg_form, registration_status = registration_status)
+        return render_template('register.html', reg_form = reg_form, registration_status = registration_status)
 
 @app.route('/logout')
 def logout():
@@ -119,9 +146,10 @@ def home_page():
     submission_status = request.args.get("submission_status", "")
 
     ## TODO: query leaderboard from database
-    leaderboard = pd.read_csv('dummy_table.csv')
-    leaderboard.sort_values('score', ascending = True, inplace = True) 
-    leaderboard.reset_index(drop = True, inplace = True)
+    # leaderboard = pd.read_csv('dummy_table.csv')
+    # leaderboard.sort_values('score', ascending = True, inplace = True) 
+    # leaderboard.reset_index(drop = True, inplace = True)
+    leaderboard = get_leaderboard(score_min = True, limit = 100)
 
     if request.method == 'POST': # If upload file / Login
         ### LOGIN 
