@@ -104,8 +104,9 @@ venv.bak/
 .mypy_cache/
 .DS_Store
 
-# submissions/*
+# MY CUSTOM
 migrations/*
 .vscode/*
-
+master_key/*
+submissions/*
 temp_folder/*
