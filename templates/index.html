@@ -75,7 +75,12 @@
             <div class="col uploadform">
                 <h2>welcome back {{ current_user.username }}! </h2>
                 <h3>Upload</h3>
-                <form action="" method=post enctype=multipart/form-data> <p><input type=file name=uploadfile>
+                <form action="" method=post enctype=multipart/form-data>
+                    <select name=submission_type>
+                        <option value="public">public</option>
+                        <option value="private">private</option>
+                    </select>
+                    <input type=file name=uploadfile>
                     <input type=submit value=Upload>
                 </form>
                 <p>{{ submission_status }}</p>
@@ -116,6 +121,32 @@
         </table>
     </div>
 
+    {% if current_user.username == 'admin' %}
+    <div class=container>
+        <h2>Private Leaderboard</h2>
+            <table class="table table-hover table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">No</th>
+                        {% for colName in leaderboard_private.columns %}
+                        <th scope="col">{{ colName }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ix, row in leaderboard_private.iterrows() %}
+                    <tr>
+                        <th scope="row">{{ ix | int + 1 }}</th>
+                        <td>{{ row.username}}</td>
+                        <td>{{ row.score }}</td>
+                        <td>{{ row.total_submission}}</td>
+                        <td>{{ row.last_sub}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
 
     <!-- JQuery -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>

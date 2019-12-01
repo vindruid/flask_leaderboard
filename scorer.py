@@ -16,7 +16,7 @@ class Scorer():
         df_submission = pd.read_csv(submission_path)
 
         if submission_type == 'private':
-            df_key = self.df_private
+            df_key = self.df_private_key
         else: 
             df_key = self.df_public_key
 

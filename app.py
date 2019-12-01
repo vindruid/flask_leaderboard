@@ -4,8 +4,7 @@ import os
 import datetime as dt
 
 from flask import Flask,render_template,url_for,request,g, flash, redirect
-from werkzeug import check_password_hash, generate_password_hash, \
-     secure_filename
+from werkzeug import secure_filename
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import current_user, LoginManager, login_user, logout_user, UserMixin
@@ -53,22 +52,22 @@ class User(UserMixin, db.Model):
     __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
-    email = db.Column(db.String(120), index=True, unique=True)
-    password_hash = db.Column(db.String(128)) ## Too lazy to make it hash
+    password = db.Column(db.String(128)) ## Too lazy to make it hash
 
     def __repr__(self):
         return self.username
 
     def check_password(self, password): ## Too lazy to make it hash
-        return self.password_hash == password
+        return self.password == password
 
 class Submission(db.Model):
     __tablename__ = "submission"
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, index=True, default=dt.datetime.now)
+    submission_type = db.Column(db.String(64))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User')
     score = db.Column(db.Float)
-    user = db.relationship('User', backref=db.backref('children', lazy='dynamic'))
 
     def __repr__(self):
         return f'<User ID {self.user_id} score {self.score}>'
@@ -87,7 +86,7 @@ class MyAdminIndexView(AdminIndexView):
         return redirect(url_for('home_page'))
 
 class UserView(ModelView):
-    column_list = (User.id, 'username','password_hash')
+    column_list = (User.id, 'username','password')
 
     def is_accessible(self):
         if current_user.is_authenticated:
@@ -98,7 +97,7 @@ class UserView(ModelView):
         return redirect(url_for('home_page'))
 
 class SubmissionView(ModelView):
-    column_list = (Submission.id, 'user_id', 'user',  'timestamp', 'score')
+    column_list = (Submission.id, 'submission_type', 'user_id', 'user',  'timestamp', 'score')
 
     def is_accessible(self):
         if current_user.is_authenticated:
@@ -113,7 +112,7 @@ admin = Admin(app, index_view=MyAdminIndexView())
 admin.add_view(UserView(User, db.session))
 admin.add_view(SubmissionView(Submission, db.session))
 
-def get_leaderboard(score_min = True, limit = 100):
+def get_leaderboard(score_min = True, limit = 100, submission_type = 'public'):
 
     if score_min:
         score_agg = "MIN"
@@ -132,6 +131,7 @@ def get_leaderboard(score_min = True, limit = 100):
             FROM submission 
             LEFT JOIN user 
             ON user.id = submission.user_id
+            WHERE submission_type = '{submission_type}'
             GROUP BY 1 
             ORDER BY 2 {score_sorting}, 4
             LIMIT {limit}
@@ -143,7 +143,6 @@ def get_leaderboard(score_min = True, limit = 100):
 # Route
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
-    u = User(username='halo', password_hash = 'hele')
     registration_status = request.args.get("registration_status", "")
     reg_form = RegisterForm()
 
@@ -154,7 +153,7 @@ def register_page():
             print(user)
             if user is None: # only when user is not registered then proceed
                 print("HALOOO")
-                u = User(username=reg_form.username.data, password_hash = reg_form.password.data)
+                u = User(username=reg_form.username.data, password = reg_form.password.data)
                 db.session.add(u)
                 db.session.commit()
                 # flash('Congratulations, you are now a registered user!')
@@ -188,11 +187,8 @@ def home_page():
     login_status = request.args.get("login_status", "")
     submission_status = request.args.get("submission_status", "")
 
-    ## TODO: query leaderboard from database
-    # leaderboard = pd.read_csv('dummy_table.csv')
-    # leaderboard.sort_values('score', ascending = True, inplace = True) 
-    # leaderboard.reset_index(drop = True, inplace = True)
-    leaderboard = get_leaderboard(score_min = True, limit = 100)
+    leaderboard = get_leaderboard(score_min = True, limit = 100, submission_type='public')
+    leaderboard_private = get_leaderboard(score_min = True, limit = 100, submission_type='private')
 
     if request.method == 'POST': # If upload file / Login
         ### LOGIN 
@@ -224,30 +220,30 @@ def home_page():
             
             if submission_file and allowed_file(submission_file.filename):
                 filename = secure_filename(submission_file.filename)
-                ## TODO: append userid and date to file to avoid duplicates
-                # filename = str(session['user_id']) + '_' + \
-                #             str(int(time.time())) + '_' + filename
 
-                if not os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id))):
-                    os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id)))
+                target_dir = os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id))
+                if not os.path.exists(target_dir):
+                    os.makedirs(target_dir)
                 
                 fullPath = os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id) , filename)
                 submission_file.save(fullPath)
 
-                ## TODO: doing calculation on saved file
-                result = scorer.calculate_score(submission_path = fullPath, submission_type = 'public')
+                submission_type = request.form.get('submission_type', "public")
+                result = scorer.calculate_score(submission_path = fullPath, submission_type = submission_type)
                 submission_status = result[0]
                 if submission_status == "SUBMISSION SUCCESS":
                     score = result[1]
                     score = round(score, 3)
-                    s = Submission(user_id=current_user.id , score=score)
+                    s = Submission(user_id=current_user.id , score=score, submission_type = submission_type)
                     db.session.add(s)
                     db.session.commit()
                     print(f"submitted {score}")
+                    
                 return redirect(url_for('home_page', submission_status = submission_status))
             
     return render_template('index.html', 
                         leaderboard = leaderboard,
+                        leaderboard_private = leaderboard_private,
                         login_form=login_form, 
                         login_status=login_status,
                         submission_status=submission_status
