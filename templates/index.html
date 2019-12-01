@@ -67,6 +67,7 @@
                     <div class="mr-sm-2">
                         {{ login_form.remember_me() }} Remeber Me
                     </div>
+                    <p style="color: red;">{{ login_status }}</p>
                 </div>
             </form>
             {% elif current_user.is_authenticated %}
@@ -78,6 +79,7 @@
                     <input type=submit value=Upload>
                 </form>
                 <p>{{ submission_status }}</p>
+
             </div>
             {% endif %}
 

@@ -9,6 +9,9 @@ from werkzeug import check_password_hash, generate_password_hash, \
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import current_user, LoginManager, login_user, logout_user, UserMixin
+from flask_admin import Admin, AdminIndexView
+from flask_admin.contrib.sqla import ModelView
+from flask_admin.model import BaseModelView
 
 from forms import LoginForm, RegisterForm
 from config import Config
@@ -24,10 +27,11 @@ ALLOWED_EXTENSIONS = {'txt', 'csv', 'names'}
 
 ## FLASK configuration
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024 # 16 Megabytes
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024 # 2 Megabytes
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY'] = 'my'
 app.config.from_object(Config)
+
 
 ## Database configuration
 db = SQLAlchemy(app)
@@ -53,7 +57,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128)) ## Too lazy to make it hash
 
     def __repr__(self):
-        return f'<User {self.username}>'
+        return self.username
 
     def check_password(self, password): ## Too lazy to make it hash
         return self.password_hash == password
@@ -64,11 +68,50 @@ class Submission(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=dt.datetime.now)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     score = db.Column(db.Float)
+    user = db.relationship('User', backref=db.backref('children', lazy='dynamic'))
 
     def __repr__(self):
         return f'<User ID {self.user_id} score {self.score}>'
 
 db.create_all()
+
+# Admin
+class MyAdminIndexView(AdminIndexView):
+    def is_accessible(self):
+        if current_user.is_authenticated:
+            return current_user.username == 'admin'
+        else:
+            False
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('home_page'))
+
+class UserView(ModelView):
+    column_list = (User.id, 'username','password_hash')
+
+    def is_accessible(self):
+        if current_user.is_authenticated:
+            return current_user.username == 'admin'
+        else:
+            False
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('home_page'))
+
+class SubmissionView(ModelView):
+    column_list = (Submission.id, 'user_id', 'user',  'timestamp', 'score')
+
+    def is_accessible(self):
+        if current_user.is_authenticated:
+            return current_user.username == 'admin'
+        else:
+            False
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('home_page'))
+
+admin = Admin(app, index_view=MyAdminIndexView())
+admin.add_view(UserView(User, db.session))
+admin.add_view(SubmissionView(Submission, db.session))
 
 def get_leaderboard(score_min = True, limit = 100):
 
@@ -97,6 +140,7 @@ def get_leaderboard(score_min = True, limit = 100):
                     db.session.bind)
     return df
 
+# Route
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
     u = User(username='halo', password_hash = 'hele')
@@ -114,7 +158,7 @@ def register_page():
                 db.session.add(u)
                 db.session.commit()
                 # flash('Congratulations, you are now a registered user!')
-                registration_status = f"Welcome {reg_form.username.data}, Please Login "
+                registration_status = f"Welcome {reg_form.username.data}, Please Login at HOME page"
                 return redirect(url_for('register_page', registration_status = registration_status))
             else:
                 registration_status = "USER NAME ALREADY USED"
@@ -141,7 +185,7 @@ def allowed_file(filename):
 @app.route('/', methods=['GET', 'POST'])
 def home_page():
     login_form = LoginForm()
-    
+    login_status = request.args.get("login_status", "")
     submission_status = request.args.get("submission_status", "")
 
     ## TODO: query leaderboard from database
@@ -156,17 +200,20 @@ def home_page():
             print(f'Login requested for user {login_form.username.data}, remember_me={login_form.remember_me.data}')
             user = User.query.filter_by(username=login_form.username.data).first()
             if user is None: # USER is not registered
-                print("NO user name")
-                return redirect(url_for('home_page'))
+                login_status = "User is not registered / Password does not match"
+                return redirect(url_for('home_page', login_status = login_status))
             elif user.check_password(login_form.password.data): # Password True
                 print('True pass')
+                login_status = ""
                 login_user(user, remember=login_form.remember_me.data)
-                return redirect(url_for('home_page'))
+                return redirect(url_for('home_page', login_status = login_status))
             else: #WRONG PASSWORD
                 print('WRONG PASS')
-                return redirect(url_for('home_page'))
+                login_status = "User is not registered / Password does not match"
+                return redirect(url_for('home_page', login_status = login_status))
+            login_status = ""
             login_user(user, remember=login_form.remember_me.data)
-            return redirect(url_for('home_page'))
+            return redirect(url_for('home_page', login_status = login_status))
 
         ### UPLOAD FILE
         if 'uploadfile' in request.files.keys() and current_user.is_authenticated:
@@ -202,6 +249,7 @@ def home_page():
     return render_template('index.html', 
                         leaderboard = leaderboard,
                         login_form=login_form, 
+                        login_status=login_status,
                         submission_status=submission_status
     )
 
