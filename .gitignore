@@ -110,3 +110,4 @@ migrations/*
 master_key/*
 submissions/*
 temp_folder/*
+app.db

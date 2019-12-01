@@ -20,9 +20,18 @@ from scorer import Scorer
 
 # PARAMETER
 
+## Leaderboard parameter
+score_min = True # True if lowest score is the best; False if greatest socre is the best
+limit_lb = 100 # Number of user showed at leaderboard table
+
+## Scorer
+scorer = Scorer(public_path = './master_key/public_key.csv', 
+                private_path = './master_key/private_key.csv', 
+                metric = mean_squared_error) #change the metric using sklearn function
+
 ## Upload parameter
 UPLOAD_FOLDER = 'submissions'
-ALLOWED_EXTENSIONS = {'txt', 'csv', 'names'}
+ALLOWED_EXTENSIONS = {'csv'} # only accept csv files
 
 ## FLASK configuration
 app = Flask(__name__)
@@ -31,19 +40,13 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY'] = 'my'
 app.config.from_object(Config)
 
-
 ## Database configuration
 db = SQLAlchemy(app)
 db.app = app
 migrate = Migrate(app, db)
 login = LoginManager(app)
 
-## Scorer
-scorer = Scorer(public_path = './master_key/public_key.csv', 
-                private_path = './master_key/private_key.csv', 
-                metric = mean_squared_error)
-
-# User Management
+# Database Model
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
@@ -112,7 +115,8 @@ admin = Admin(app, index_view=MyAdminIndexView())
 admin.add_view(UserView(User, db.session))
 admin.add_view(SubmissionView(Submission, db.session))
 
-def get_leaderboard(score_min = True, limit = 100, submission_type = 'public'):
+# Leader Board
+def get_leaderboard(score_min, limit, submission_type = 'public'):
 
     if score_min:
         score_agg = "MIN"
@@ -187,8 +191,8 @@ def home_page():
     login_status = request.args.get("login_status", "")
     submission_status = request.args.get("submission_status", "")
 
-    leaderboard = get_leaderboard(score_min = True, limit = 100, submission_type='public')
-    leaderboard_private = get_leaderboard(score_min = True, limit = 100, submission_type='private')
+    leaderboard = get_leaderboard(score_min = score_min, limit = limit_lb, submission_type='public')
+    leaderboard_private = get_leaderboard(score_min = score_min, limit = limit_lb, submission_type='private')
 
     if request.method == 'POST': # If upload file / Login
         ### LOGIN 
