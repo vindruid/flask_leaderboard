@@ -104,4 +104,8 @@ venv.bak/
 .mypy_cache/
 .DS_Store
 
-submissions/*
+# submissions/*
+migrations/*
+.vscode/*
+
+temp_folder/*

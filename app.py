@@ -1,10 +1,10 @@
 import numpy as np 
-import pandas as pd # be replaced soon
+import pandas as pd
 import os
 import datetime as dt
 
 from flask import Flask,render_template,url_for,request,g, flash, redirect
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import current_user, LoginManager, login_user, logout_user, UserMixin
@@ -12,11 +12,11 @@ from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.model import BaseModelView
 
+from sklearn.metrics import mean_squared_error
+
 from forms import LoginForm, RegisterForm
 from config import Config
-
 from scorer import Scorer
-from sklearn.metrics import mean_squared_error
 
 # PARAMETER
 
