@@ -21,13 +21,12 @@ from scorer import Scorer
 # PARAMETER
 
 ## Leaderboard parameter
-score_min = True # True if lowest score is the best; False if greatest socre is the best
 limit_lb = 100 # Number of user showed at leaderboard table
-
-## Scorer
+score_min = True # True if lowest score is the best; False if greatest score is the best
+metric = mean_squared_error #change the metric using sklearn function
 scorer = Scorer(public_path = './master_key/public_key.csv', 
                 private_path = './master_key/private_key.csv', 
-                metric = mean_squared_error) #change the metric using sklearn function
+                metric = metric) #change the metric using sklearn function
 
 ## Upload parameter
 UPLOAD_FOLDER = 'submissions'
