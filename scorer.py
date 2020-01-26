@@ -22,6 +22,7 @@ class Scorer():
 
         # if input length not same, return None
         if len(df_key) != len(df_submission):
+            print(len(df_key), len(df_submission))
             return ("NOT SAME LENGTH", None)
         
         df_merged = df_key.merge(df_submission, how ='inner', 

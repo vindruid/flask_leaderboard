@@ -31,13 +31,18 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('register_page') }}">Register</a>
                 </li>
+                {% if current_user.username == 'admin' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin">**ADMIN**</a>
+                </li>
+                {% endif %}
             </ul>
         </div>
     </nav>
     <br />
     <br />
 
-    <div class="jumbotron" style="background:#2ca6b6;color:#fff">
+    <div class="jumbotron" style="background:#1f6794;color:#fff">
         <div class="container">
             <h2 class="display-3">Simple Leaderboard</h2>
 
@@ -87,7 +92,7 @@
             </div>
             {% endif %}
 
-            <a class="btn btn-success waves-effect btn-md" href="/" role="button">Refresh &raquo;</a>
+            <a class="btn waves-effect btn-md" style="background:#2a85bd;color:#fff" href="/" role="button">Refresh &raquo;</a>
             {% if current_user.is_authenticated %}
             <a class="btn btn-success waves-effect btn-md" href="{{ url_for('logout') }}" role="button">Log Out
                 &raquo;</a>
