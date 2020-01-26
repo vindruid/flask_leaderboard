@@ -5,7 +5,7 @@ from flask_migrate import Migrate, MigrateCommand
 
 from config import Config
 
-from app import User, Submission
+from main import User, Submission
 
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'

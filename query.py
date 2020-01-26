@@ -1,4 +1,4 @@
-from app import Submission 
+from main import Submission 
 
 subs = Submission.query.all()
 for sub in subs:
