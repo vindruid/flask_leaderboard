@@ -12,7 +12,7 @@ from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.model import BaseModelView
 
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
 
 from forms import LoginForm, RegisterForm
 from config import Config
@@ -22,8 +22,8 @@ from scorer import Scorer
 
 ## Leaderboard parameter
 limit_lb = 100 # Number of user showed at leaderboard table
-score_min = True # True if lowest score is the best; False if greatest score is the best
-metric = mean_squared_error #change the metric using sklearn function
+greater_better = False # True if lowest score is the best; False if greatest score is the best
+metric = mean_absolute_error #change the metric using sklearn function
 scorer = Scorer(public_path = './master_key/public_key.csv', 
                 private_path = './master_key/private_key.csv', 
                 metric = metric) #change the metric using sklearn function
@@ -115,15 +115,16 @@ admin.add_view(UserView(User, db.session))
 admin.add_view(SubmissionView(Submission, db.session))
 
 # Leader Board
-def get_leaderboard(score_min, limit, submission_type = 'public'):
+def get_leaderboard(greater_better, limit, submission_type = 'public'):
 
-    if score_min:
-        score_agg = "MIN"
-        score_sorting = "ASC"
-
-    else:
+    if greater_better:
         score_agg = "MAX"
         score_sorting = "DESC"
+
+    else:
+
+        score_agg = "MIN"
+        score_sorting = "ASC"
 
     query = f"""
             SELECT
@@ -190,8 +191,8 @@ def home_page():
     login_status = request.args.get("login_status", "")
     submission_status = request.args.get("submission_status", "")
 
-    leaderboard = get_leaderboard(score_min = score_min, limit = limit_lb, submission_type='public')
-    leaderboard_private = get_leaderboard(score_min = score_min, limit = limit_lb, submission_type='private')
+    leaderboard = get_leaderboard(greater_better = greater_better, limit = limit_lb, submission_type='public')
+    leaderboard_private = get_leaderboard(greater_better = greater_better, limit = limit_lb, submission_type='private')
 
     if request.method == 'POST': # If upload file / Login
         ### LOGIN 
@@ -222,6 +223,7 @@ def home_page():
                 raise Exception('Invalid file extension')
             
             if submission_file and allowed_file(submission_file.filename):
+
                 filename = secure_filename(submission_file.filename)
 
                 target_dir = os.path.join(app.config['UPLOAD_FOLDER'], str(current_user.id))
@@ -241,6 +243,8 @@ def home_page():
                     db.session.add(s)
                     db.session.commit()
                     print(f"submitted {score}")
+
+                    submission_status =  f"SUBMISSION SUCCESS | Score: {round(score,3)}" 
                     
                 return redirect(url_for('home_page', submission_status = submission_status))
             
