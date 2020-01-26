@@ -14,7 +14,7 @@ The Flask Leaderboard repo enable users to:
 - [Clone and Install](#clone-and-install)
 - [Insert Master Key](#insert-master-key)
 - [Change Metric score](#change-metric-score)
-- [Run Flask App)(#run-flask-app)
+- [Run Flask App](#run-flask-app)
 - [Make Admin account](#make-admin-account)
 
 ## How to Use it As a User
@@ -45,15 +45,16 @@ data_id,prediction
 
 ### Change Metric Score
 open `app.py`
-#### change `score_min` parameter 
+#### change `greater_better` parameter 
 ```python
-score_min = True
+greater_better = True
+```
+if greatest score is the best (i.e. Accuracy, R2 Score) 
+
+```python
+greater_better = False
 ```
 if lowest score is the best (i.e. Mean Square Error, log loss)
-```python
-score_min = False
-```
-if greatest socre is the best (i.e. Accuracy, R2 Score) 
 
 #### change `metric` parameter
 Using [scikit learn metrics](https://scikit-learn.org/stable/modules/classes.html#sklearn-metrics-metrics) 
@@ -64,7 +65,7 @@ from sklearn.metrics import mean_squared_error
 
 metric = mean_squared_error
 ```
-Ensure the metric you choose align with the `score_min` parameter
+Ensure the metric you choose align with the `greater_better` parameter
 
 ### Run Flask App
 in your terminal, run `python app.py` <br>
