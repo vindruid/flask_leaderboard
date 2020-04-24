@@ -44,7 +44,7 @@ data_id,prediction
 ```
 
 ### Change Metric Score
-open `app.py`
+open `main.py`
 #### change `greater_better` parameter 
 ```python
 greater_better = True
@@ -68,7 +68,7 @@ metric = mean_squared_error
 Ensure the metric you choose align with the `greater_better` parameter
 
 ### Run Flask App
-in your terminal, run `python app.py` <br>
+in your terminal, run `python main.py` <br>
 Then you will see a page open in your browser with url `http://localhost:5000/` 
 
 ### Make Admin account
