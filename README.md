@@ -103,5 +103,5 @@ Submission menu will be appeared if you already login <br>
 Choose your submission type (`public` or `private`) <br>
 Click choose file button and select your file then click upload
 
-
+Ensure your file extension is `.csv` and the file has 2 columns `data_id` & `prediction` with `data_id` according to admin instruction (should match with master key
 
