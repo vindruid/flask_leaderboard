@@ -21,6 +21,7 @@ First, setting up the admin
 - [Change Scoring Method](#change-scoring-method)
 - [Run Flask App](#run-flask-app)
 - [Make Admin Account](#make-admin-account)
+- [Reset All](#reset-all)
 
 ### Clone and Install
 Clone the repo using `git clone https://github.com/vindruid/flask_leaderboard.git` 
@@ -79,6 +80,9 @@ At that page, you can manage users and submissions (create, read, update, and de
 *If you forgot your admin password* 
 run `python query.py` and it will print all submission and username with password 
 
+### Reset All
+If you intent to remove all user and submission. <br>
+just delete `app.db` file
 
 ## How to Use it as an User
 - [Connect to leaderboard](connect-to-leaderboard)
