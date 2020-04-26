@@ -2,7 +2,7 @@
 Make simple leaderboard for machine learning competition using Flask
 
 # How to Use This Apps
-There are two role: admin and user 
+There are two role: [admin](#How-to-Use-it-as-an-Admin) and [user](#How-to-Use-it-as-an-User) 
 
 Admin is able to: 
 - See Public & Private Leaderboard
@@ -15,7 +15,7 @@ The Flask Leaderboard repo enable users to:
 
 First, setting up the admin 
 
-## How to Use it As a Admin
+## How to Use it as an Admin
 - [Clone and Install](#clone-and-install)
 - [Insert Master Key](#insert-master-key)
 - [Change Scoring Method](#change-scoring-method)
@@ -80,7 +80,7 @@ At that page, you can manage users and submissions (create, read, update, and de
 run `python query.py` and it will print all submission and username with password 
 
 
-## How to Use it As a User
+## How to Use it as an User
 - [Connect to leaderboard](connect-to-leaderboard)
 - [Register](#register)
 - [Login](#login)
