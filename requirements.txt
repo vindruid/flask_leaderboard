@@ -5,7 +5,7 @@ Flask-Migrate==2.5.2
 Flask-Script==2.0.6
 Flask-SQLAlchemy==2.4.1
 Flask-WTF==0.14.2
-numpy==1.16.4
+numpy==1.22.0
 pandas==0.24.2
 requests==2.21.0
 scikit-learn==0.21.3
